@@ -42,6 +42,38 @@ const server = Bun.serve({
 			});
 		}
 
+		if (url.pathname === "/privacy") {
+			return new Response(
+				`Privacy Policy
+
+This service is extremely simple and does not collect any data about you. Here's what we do and don't do:
+
+What we do:
+- Serve random images from a predefined list
+- Log requests in development mode only (not in production)
+- Nothing else
+
+What we don't do:
+- Store any data
+- Track users
+- Use cookies
+- Share data with third parties
+- Collect analytics
+- Store IP addresses
+- Monitor usage patterns
+
+The only thing we know about you is that you visited this page, and that's it. We don't even store that information.
+
+If you have any questions, feel free to contact me at mai@sakurajima.cloud`,
+				{
+					headers: {
+						"Content-Type": "text/plain",
+						"Cache-Control": "public, max-age=3600",
+					},
+				},
+			);
+		}
+
 		const random = getRandomImage();
 
 		if (url.pathname === "/json") {
