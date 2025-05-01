@@ -12,12 +12,32 @@ const IMAGES = [
 	"https://cdn.pxseu.com/cfiBi797Q.png",
 ] as const;
 
-function getRandomImage(): string {
-	const array = new Uint32Array(1);
+type RandomImage = {
+	url: string;
+	index: number;
+} | null;
 
+function getRandomImage(usedIndexes?: number[]): RandomImage {
+	const array = new Uint32Array(1);
 	crypto.getRandomValues(array);
 
-	return IMAGES[array[0]! % IMAGES.length]!;
+	let availableIndexes = Array.from({ length: IMAGES.length }, (_, i) => i);
+	if (usedIndexes?.length) {
+		availableIndexes = availableIndexes.filter((i) => !usedIndexes.includes(i));
+	}
+
+	// If all images have been used, return null
+	if (availableIndexes.length === 0) {
+		return null;
+	}
+
+	const randomIndex = array[0]! % availableIndexes.length;
+	const index = availableIndexes[randomIndex]!;
+
+	return {
+		url: IMAGES[index]!,
+		index,
+	};
 }
 
 const server = Bun.serve({
@@ -74,10 +94,15 @@ If you have any questions, feel free to contact me at mai@sakurajima.cloud`,
 			);
 		}
 
-		const random = getRandomImage();
-
 		if (url.pathname === "/json") {
-			return new Response(JSON.stringify({ url: random }), {
+			const usedIndexes = url.searchParams
+				.get("used")
+				?.split(",")
+				.map((i) => parseInt(i, 10))
+				.filter((i) => !isNaN(i));
+
+			const random = getRandomImage(usedIndexes);
+			return new Response(JSON.stringify(random), {
 				headers: {
 					"Content-Type": "application/json",
 				},
@@ -85,8 +110,12 @@ If you have any questions, feel free to contact me at mai@sakurajima.cloud`,
 		}
 
 		// Serve random image
-		const response = await fetch(random);
+		const random = getRandomImage();
+		if (!random) {
+			return new Response("No more images available", { status: 404 });
+		}
 
+		const response = await fetch(random.url);
 		const headers = new Headers({
 			"Content-Type": response.headers.get("content-type")!,
 			"Cache-Control": "private, max-age=0",

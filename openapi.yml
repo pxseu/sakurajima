@@ -1,0 +1,58 @@
+openapi: 3.1.0
+info:
+    title: Mai Sakurajima Scene Image API
+    description: |
+        Provides random images of Mai Sakurajima from various anime scenes.
+
+        To avoid getting the same image multiple times, you can use the `used` query parameter
+        with a comma-separated list of indexes you've already received. For example:
+        `?used=0,1,2` will return a random image that hasn't been used yet.
+
+        If all images have been used (i.e., you've seen all 6 images), the API will return `null`.
+    version: 1.0.0
+servers:
+    - url: https://sakurajima.cloud
+      description: Server providing random Mai Sakurajima scene images
+paths:
+    /json:
+        get:
+            operationId: getRandomMaiImage
+            summary: Get a random Mai Sakurajima image from anime scenes.
+            description: |
+                Fetches a JSON object containing the URL and index of a randomly selected image of Mai Sakurajima.
+                The index can be used with the `used` parameter to avoid getting the same image multiple times.
+            parameters:
+                - name: used
+                  in: query
+                  description: Comma-separated list of indexes to exclude from the random selection
+                  required: false
+                  schema:
+                      type: string
+                      example: "0,1,2"
+            responses:
+                "200":
+                    description: JSON object containing the image URL and index.
+                    content:
+                        application/json:
+                            schema:
+                                oneOf:
+                                    - type: object
+                                      properties:
+                                          url:
+                                              type: string
+                                              format: uri
+                                              description: URL of the random image
+                                          index:
+                                              type: integer
+                                              minimum: 0
+                                              maximum: 5
+                                              description: Index of the image in the collection
+                                    - type: "null"
+                                      description: Returned when all images have been used
+                "404":
+                    description: No more images available (all have been used)
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: "No more images available"
