@@ -17,7 +17,7 @@ function getRandomImage(): string {
 
 	crypto.getRandomValues(array);
 
-	return IMAGES[array[0] % IMAGES.length]!;
+	return IMAGES[array[0]! % IMAGES.length]!;
 }
 
 const server = Bun.serve({
