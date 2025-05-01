@@ -1,24 +1,37 @@
 {
 	"compilerOptions": {
-		"allowSyntheticDefaultImports": true,
+		"target": "ESNext",
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"lib": [
+			"ESNext"
+		],
+		"strict": true,
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true,
+		"allowJs": true,
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"incremental": true,
+		"noUncheckedIndexedAccess": true,
+		"sourceMap": true,
 		"declaration": true,
 		"declarationMap": true,
-		"esModuleInterop": true,
-		"forceConsistentCasingInFileNames": true,
-		"lib": [
-			"ES2022"
-		],
-		"module": "ES2022",
-		"moduleResolution": "NodeNext",
-		"resolveJsonModule": true,
-		"skipLibCheck": true,
-		"sourceMap": true,
-		"strict": true,
-		"target": "ES2022",
 		"rootDir": "./src",
 		"outDir": "./dist",
-		"typeRoots": [
-			"@types"
+		"verbatimModuleSyntax": true,
+		"allowImportingTsExtensions": true,
+		"noEmit": true,
+		"types": [
+			"bun-types"
 		]
-	}
+	},
+	"include": [
+		"src/**/*"
+	],
+	"exclude": [
+		"node_modules",
+		"dist"
+	]
 }
