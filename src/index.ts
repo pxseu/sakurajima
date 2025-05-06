@@ -1,7 +1,3 @@
-const PRODUCTION = process.env.NODE_ENV === "production";
-
-const PORT = Number(process.env.PORT || 3000);
-
 const FAVICON = "https://cdn.pxseu.com/dlO2HN52D.png";
 const IMAGES = [
 	"https://cdn.pxseu.com/Nc4z2WvoV.png",
@@ -42,29 +38,53 @@ function getRandomImage(usedIndexes?: number[]): RandomImage {
 
 const server = Bun.serve({
 	hostname: "0.0.0.0",
-	port: PORT,
-	async fetch(req: Request) {
-		const url = new URL(req.url);
+	port: Number(process.env.PORT || 3000),
+	routes: {
+		"/": async () => {
+			const random = getRandomImage();
 
-		// Log request in development
-		if (!PRODUCTION) {
-			console.log(`${req.method} ${url.pathname}`);
-		}
+			if (!random) {
+				return new Response("No more images available", { status: 404 });
+			}
 
-		// Handle favicon
-		if (url.pathname === "/favicon.ico") {
+			const response = await fetch(random.url);
+			const headers = new Headers({
+				"Content-Type": response.headers.get("content-type")!,
+				"Cache-Control": "private, max-age=0",
+				Connection: "keep-alive",
+				"Keep-Alive": "timeout=15, max=200",
+				"Content-Disposition": `inline; filename="mai-${random.index}.${random.url.split(".").pop()}"`,
+			});
+
+			return new Response(response.body, { headers });
+		},
+		"/favicon.ico": async () => {
 			const response = await fetch(FAVICON);
+
 			return new Response(response.body, {
 				headers: {
 					"Cache-Control": "public, max-age=31536000",
 					"Content-Type": response.headers.get("content-type")!,
 				},
 			});
-		}
+		},
+		"/json": async (req) => {
+			const url = new URL(req.url);
+			const usedIndexes = url.searchParams
+				.get("used")
+				?.split(",")
+				.map((i) => parseInt(i, 10))
+				.filter((i) => !isNaN(i));
 
-		if (url.pathname === "/privacy") {
-			return new Response(
-				`Privacy Policy
+			const random = getRandomImage(usedIndexes);
+			return new Response(JSON.stringify(random), {
+				headers: {
+					"Content-Type": "application/json",
+				},
+			});
+		},
+		"/privacy": new Response(
+			`Privacy Policy
 
 This service is extremely simple and does not collect any data about you. Here's what we do and don't do:
 
@@ -85,45 +105,18 @@ What we don't do:
 The only thing we know about you is that you visited this page, and that's it. We don't even store that information.
 
 If you have any questions, feel free to contact me at mai@sakurajima.cloud`,
-				{
-					headers: {
-						"Content-Type": "text/plain",
-						"Cache-Control": "public, max-age=3600",
-					},
-				},
-			);
-		}
-
-		if (url.pathname === "/json") {
-			const usedIndexes = url.searchParams
-				.get("used")
-				?.split(",")
-				.map((i) => parseInt(i, 10))
-				.filter((i) => !isNaN(i));
-
-			const random = getRandomImage(usedIndexes);
-			return new Response(JSON.stringify(random), {
+			{
 				headers: {
-					"Content-Type": "application/json",
+					"Content-Type": "text/plain",
+					"Cache-Control": "public, max-age=3600",
 				},
-			});
-		}
-
-		// Serve random image
-		const random = getRandomImage();
-		if (!random) {
-			return new Response("No more images available", { status: 404 });
-		}
-
-		const response = await fetch(random.url);
-		const headers = new Headers({
-			"Content-Type": response.headers.get("content-type")!,
-			"Cache-Control": "private, max-age=0",
-			Connection: "keep-alive",
-			"Keep-Alive": "timeout=15, max=200",
-		});
-
-		return new Response(response.body, { headers });
+			},
+		),
+		"/robots.txt": new Response("User-agent: *\nDisallow: /", {
+			headers: {
+				"Content-Type": "text/plain",
+			},
+		}),
 	},
 });
 
