@@ -6,6 +6,9 @@ const IMAGES = [
 	"https://cdn.pxseu.com/ylP2WZ-Gv.jpg",
 	"https://cdn.pxseu.com/As6NFGCTK.png",
 	"https://cdn.pxseu.com/cfiBi797Q.png",
+	"https://cdn.pxseu.com/aNujgu2aB.png",
+	"https://cdn.pxseu.com/3dEb3iea8.jpg",
+	"https://cdn.pxseu.com/5kNqDRxTk.png",
 ] as const;
 
 type RandomImage = {
